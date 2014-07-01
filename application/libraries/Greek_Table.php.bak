@@ -1,0 +1,234 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+/**
+ * Greeking Greek Table Html
+ *
+ * This class enables the creation table and pagination
+ * 
+ * @package     Greeking HTML
+ * @subpackage  Libraries
+ * @category    Libraries
+ * @author      Anggie Septian ^_^ @greeking-solutions
+ * @email       anggie.if04@gmail.com
+**/ 
+ 
+class Greek_Table {
+
+    var $CI;
+    var $template = NULL;
+
+    /**
+     * 
+     * PROTECTED attributes
+     * 
+    **/ 
+    // table headers container
+    protected $headers;
+    // table rows container
+    protected $rows = array();
+    // total rows that fetched
+    protected $total_rows;
+    protected $page;
+    protected $class;
+    protected $method;
+
+    /**
+     * 
+     * PUBLIC attributes
+     * 
+    **/ 
+    // num of displayed rows in one page
+    public  $displayed_rows = 10;
+    // flag displaying all row item data
+    public  $is_display_all_rows = false;
+    // flag displaying html table pagination links
+    public  $is_display_links = true;
+
+    public function __construct()
+    {
+        $this->CI =& get_instance();
+        $this->CI->load->library('table');
+        $this->class = $this->CI->router->fetch_class(); 
+        $this->method = $this->CI->router->fetch_method(); 
+    }
+
+    function set_offset($offset)
+    {
+        if ($this->page === '') {
+            $this->page = ($this->CI->uri->segment(3)) ? $this->CI->uri->segment(3) : 0;
+        }
+        else {
+            $this->page = $offset;
+        }
+    }
+    
+    function get_data($table)
+    {
+        $this->total_rows = $this->CI->db->get($table)->num_rows();
+
+        if ($this->is_display_all_rows === TRUE) {
+            // all row displayed, no need for paging
+            $data = $this->CI->db->get($table)->result_array();
+            $this->is_display_links = FALSE;
+        }
+        else {
+            // not all row displayed, use paging
+            $data = $this->CI->db->get($table, $this->displayed_rows, $this->page)->result_array();
+        }
+
+        return $data;
+    }
+
+    function set_template($template)
+    {
+        if ( ! is_array($template)) {
+            return FALSE;
+        }
+
+        $this->template = $template;
+    }
+
+    public function set_header($header)
+    {
+        $this->headers = $header;
+    }
+
+    public function add_row($row)
+    {
+        $this->rows[] = $row;
+    }
+
+    /**
+     * Real Generate the table
+     *
+     * @access  private
+     * @param   mixed
+     * @return  string
+    **/
+    private function _get()
+    {
+        $buffer = "";
+        $buffer .= $this->is_display_links === TRUE ? $this->_create_link() : "";
+        $buffer .= $this->_create_row();
+        $buffer .= $this->is_display_links === TRUE ? $this->_create_link() : "";
+
+        // Clear table class properties before generating the table
+        $this->clear();
+        return $buffer;
+    }
+
+    /**
+     * Generate the pagination links
+     *
+     * @access  private
+     * @return  string
+    **/
+    private function _create_link()
+    {
+        $config_paging['base_url'] = base_url($this->class.'/'.$this->method);
+        $config_paging['total_rows'] = $this->total_rows;
+        $config_paging['per_page'] = $this->displayed_rows;
+        $config_paging['num_links'] = 3;
+        $config_paging['uri_segment'] = 3;
+        $this->CI->pagination->initialize($config_paging);
+
+        return $this->CI->pagination->create_links();
+    }
+
+    /**
+     * Generate the table heading and table body 
+     *
+     * @access  private
+     * @return  string
+    **/
+    private function _create_row()
+    {
+        $this->CI->table->set_template($this->_compile_template());
+        $this->CI->table->set_heading($this->headers);
+        return $this->CI->table->generate($this->rows);
+    }
+
+    /**
+     * Generate the table
+     *
+     * @access  public
+     * @return  string
+    **/
+    public function to_string()
+    {
+        return $this->_get();
+    }
+    
+    /**
+     * Print Generate the table
+     *
+     * @access  public
+    **/
+    public function to_print()
+    {
+        echo $this->_get();
+    }
+
+    /**
+     * Clears the table arrays.  Useful if multiple tables are being generated
+     *
+     * @access  public
+     * @return  void
+    **/
+    function clear()
+    {
+        $this->rows = array();
+        $this->headers = array();
+    }
+
+    /**
+     * Compile Template
+     *
+     * @access  private
+     * @return  void
+    **/
+    private function _compile_template()
+    {
+        return $this->template == NULL ? $this->_default_template() : $this->template;
+    }
+
+    /**
+     * Default Template
+     *
+     * @access  private
+     * @return  void
+    **/
+    private function _default_template()
+    {
+        $template = array (
+            'table_open' => '<form name="theForm" id="theForm" method="post" action="">
+            <table id="dataTable" class="table table-bordered table-condensed table-hover table-striped dataTable">',
+
+            'thead_open' => '<thead>',
+            'thead_close' => '</thead>',
+
+            'heading_row_start' => '<tr>',
+            'heading_row_end' => '</tr>',
+            'heading_cell_start' => '<th>',
+            'heading_cell_end' => '</th>',
+
+            'tbody_open' => '<tbody>',
+            'tbody_close' => '</tbody>',
+
+            'row_start' => '<tr>',
+            'row_end' => '</tr>',
+            'cell_start' => '<td>',
+            'cell_end' => '</td>',
+
+            'row_alt_start' => '<tr>',
+            'row_alt_end' => '</tr>',
+            'cell_alt_start' => '<td>',
+            'cell_alt_end' => '</td>',
+
+            'table_close' => '</table></form>'
+        );
+
+        return $template;
+    }
+
+}

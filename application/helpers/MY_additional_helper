@@ -1,0 +1,76 @@
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+// function DMS(Degree, Minute, Second) to DD(Degree, Decimal)
+if ( ! function_exists('DMStoDD')) {
+	function DMStoDD($dms)
+	{
+		$degree = $dms[0];
+		$minute = substr($dms, 1, -1);
+		$latlong = str_replace('.', ',', $dms);
+		$mata_angin = substr($latlong, -1, 1);
+
+		$latlng = $minute / 60;
+		$dd = $degree + $latlng;
+		
+		if($mata_angin == 'S' OR $mata_angin == 'W') {
+			return '-' . $dd;
+		}
+		else {
+			return $dd;
+		}
+	}
+}
+
+if ( ! function_exists('DMStoDD2')) {
+	function DMStoDD2($dms)
+	{
+		$xy = explode(".", $dms);
+		$degree = substr($xy[0], 0, -2);
+		$minute = substr($xy[0], -2);
+		
+		$sec = substr($xy[1], 0, -1);
+		$sec = substr_replace($sec, '.', 2).substr($sec, 2);
+		
+		$mata_angin = substr($xy[1], -1, 1);
+
+		$latlng = $minute / 60;
+		$detik = $sec / 3600;
+		
+		$dd = $degree + $latlng + $detik;
+		
+		if($mata_angin == 'S' OR $mata_angin == 'W') {
+			return '-' . $dd;
+		}
+		else {
+			return '+' . $dd;
+		}
+		
+		// sumber formula http://pengairan.purworejokab.go.id/konversi-koordinat-gp/
+		// testing http://www.latlong.net/lat-long-dms.html
+	}
+}
+
+if ( ! function_exists('google_translate')) {
+	function google_translate($text, $from, $to, $api_key = NULL){
+		$api_key = (is_null($api_key)) ? find() : $api_key;
+	    $uri  = 'https://www.googleapis.com/language/translate/v2?';
+	    $uri .= 'key=' . $api_key . '&source=' . $from . '&target=';
+	    $uri .= $to . '&q=' . $text;
+
+	    $res = file_get_contents($uri);
+	    $array = json_decode($res);
+	    
+	    return $array->data->translations[0]->translatedText;
+	}
+}
+
+if ( ! function_exists('find')) {
+    function find() {
+        $CI = & get_instance();
+        $salt = $CI->config->item('api_key');
+
+        return $salt;
+    }
+}
+
+/* End of file application/helpers/MY_additional_helper.php */

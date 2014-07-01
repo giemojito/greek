@@ -1,0 +1,80 @@
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+/**
+ * otherDiffDate
+ *
+ * @access  public
+ * @param   string date
+ * @return  string
+ */
+if ( ! function_exists('otherDiffDate')) {
+	function otherDiffDate($start, $end = false)
+	{
+		if( ! $end) {
+			$end = time();
+		}
+
+		$intervalo = date_diff(date_create($start), date_create($end));
+		$out = $intervalo->format("%Y");
+
+		$out = $intervalo->format("%Y-%M-%d %H:%i:%s");
+		return $out;
+	}
+}
+
+/**
+ * diff
+ *
+ * @access  public
+ * @param   string strtotime
+ * @return  integer
+ */
+if ( ! function_exists('diff')) {
+	function diff($start, $end = false)
+	{ 
+	    if( ! $end) {
+			$end = time();
+		}
+
+	    if( ! is_numeric($start) || ! is_numeric($end)) {
+			return false;
+		} 
+	    
+		// Convert $start and $end into EN format (ISO 8601) 
+	    $start = date('Y-m-d H:i:s', $start);
+	    $end = date('Y-m-d H:i:s', $end);
+	    $d_start = new DateTime($start); 
+	    $d_end = new DateTime($end); 
+	    $diff = $d_start->diff($d_end); 
+		
+	    // return all data 
+	    $d = $diff->format('%d') * 24 * 60;
+		$H = $diff->format('%h') * 60; 
+		$i = $diff->format('%i'); 
+	    // $this->sec = $diff->format('%s'); 
+
+	    return ceil((($d + $H + $i) - 60) / 60) * 1000 + 1000;
+	}
+}
+
+
+/**
+ * Numeric to "A full textual"
+ *
+ * Formats Numeric representation of a month (with leading zeros or without leading zeros)
+ * 01 through 12 or 1 through 12 to such as Januari or Maret / Maret through Desember
+ *
+ * @access	public
+ * @param	integer a numeric month
+ * @return	string
+**/    
+if ( ! function_exists('getMonth')) {
+    function getMonth($month)
+    {
+    	$arr = array(1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'Nopember', 'Desember');
+        
+        return $month[(int) $month];
+    }
+}
+
+/* End of file application/helpers/MY_date_helper.php */

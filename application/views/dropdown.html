@@ -1,0 +1,72 @@
+<script type="text/javascript" src="<?php echo base_url() .'assets/js/jquery-2.1.1.js'; ?>"></script>
+ 
+<?php
+    echo form_open('#');
+    $js = 'id="dati1code" onchange="d1change();"';
+    echo form_dropdown('dati1code', $prp, '', $js);
+    echo form_close();
+ ?>
+
+<select id="dati2code" name="dati2code" onChange="d2change();"> </select>
+<br>
+<br>
+<select id="dati3code" name="dati3code" onChange="d3change();"> </select>
+<br>
+<br>
+<select id="dati4code" name="dati3code"> </select>
+
+
+<script type="text/javascript">
+    function d1change(){
+        d1 = document.getElementById('dati1code').value;
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url('rekursif_menu/dati2'); ?>",
+            data: "dati1=" + d1,
+            dataType: 'json',
+            success: function(data){
+                $("#dati2code").html(data);
+            },
+
+            error:function(XMLHttpRequest){
+                alert(XMLHttpRequest.responseText);
+            }
+        });
+    };
+
+    function d2change() {
+        var d1 = document.getElementById('dati1code').value;
+        var d2 = document.getElementById('dati2code').value;
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url('rekursif_menu/dati3'); ?>",
+            data: "dati1=" + d1 + "&dati2=" + d2,
+            success: function(data){
+                $("#dati3code").html(data);
+            },
+
+            error:function(XMLHttpRequest){
+                alert(XMLHttpRequest.responseText);
+            }
+        });
+    };
+
+    function d3change() {
+        var d1 = document.getElementById('dati1code').value;
+        var d2 = document.getElementById('dati2code').value;
+        var d3 = document.getElementById('dati3code').value;
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url('rekursif_menu/dati4'); ?>",
+            data: "dati1=" + d1 + "&dati2=" + d2 + "&dati3=" + d3,
+            success: function(data){
+                $("#dati4code").html(data);
+            },
+
+            error:function(XMLHttpRequest){
+                alert(XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+</script>
